@@ -1,0 +1,22 @@
+name: Build Necrosynth VST3
+on:
+  workflow_dispatch:
+  push:
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -B build
+      - name: Build
+        run: cmake --build build --config Release --parallel
+      - name: Collect plugin
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path out | Out-Null
+          Get-ChildItem -Path build -Recurse -Directory -Filter "*.vst3" | ForEach-Object { Copy-Item $_.FullName -Destination out -Recurse }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Necrosynth-VST3-Windows
+          path: out
